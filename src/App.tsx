@@ -19,7 +19,7 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route
-              path="/filter"
+              path="/"
               element={
                 <ProtectedRoute>
                   <div className="container mx-auto mt-8 px-4">
@@ -28,7 +28,7 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
-            <Route path="/" element={<Navigate to="/filter" replace />} />
+            {/* <Route path="/" element={<Navigate to="/filter" replace />} /> */}
           </Routes>
         </div>
       </Router>

@@ -12,7 +12,7 @@ export function Login() {
     // In a real app, you'd validate credentials here
     if (username && password) {
       sessionStorage.setItem("isLoggedIn", "true");
-      navigate("/filter");
+      navigate("/");
     } else {
       alert("Please enter both username and password");
     }
