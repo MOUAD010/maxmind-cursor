@@ -1,15 +1,4 @@
-import {
-  Line,
-  Area,
-  AreaChart,
-  LineChart,
-  CartesianGrid,
-  Bar,
-  BarChart,
-  XAxis,
-  YAxis,
-  Rectangle,
-} from "recharts";
+import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
   Card,
   CardContent,

@@ -1,15 +1,4 @@
-import {
-  Line,
-  Area,
-  AreaChart,
-  LineChart,
-  CartesianGrid,
-  Bar,
-  BarChart,
-  XAxis,
-  YAxis,
-  Rectangle,
-} from "recharts";
+import { Bar, BarChart, XAxis, Rectangle } from "recharts";
 import {
   Card,
   CardContent,
@@ -17,11 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
+import { ChartContainer } from "@/components/ui/chart";
 
 const BarCharts = () => {
   return (
