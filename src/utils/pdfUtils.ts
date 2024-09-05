@@ -6,7 +6,6 @@ export const captureChart = async (element: HTMLElement) => {
     backgroundColor: null,
     useCORS: true,
     logging: false,
-    imageTimeout: 15000,
   });
   return canvas.toDataURL("image/png");
 };

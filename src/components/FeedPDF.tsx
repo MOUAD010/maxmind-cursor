@@ -49,8 +49,10 @@ const styles = StyleSheet.create({
     width: "70%",
   },
   text: {
-    fontSize: 10,
-    marginBottom: 5,
+    margin: 12,
+    fontSize: 14,
+    textAlign: "justify",
+    fontFamily: "Times-Roman",
   },
   date: {
     fontSize: 12,

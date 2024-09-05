@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { format } from "date-fns";
@@ -8,6 +8,7 @@ import PostAnalytics from "./PostAnalytics";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import FeedPDF from "./FeedPDF";
 import { captureChart } from "../utils/pdfUtils";
+import RightDrawer from "./ui/RightDrawer";
 
 export type FeedItem = {
   id: string;
@@ -47,7 +48,12 @@ const fetchFeed = async (accountId: string, since: string, until: string) => {
 export function FeedDisplay({ accountId, dateRange }: FeedDisplayProps) {
   const [chartImages, setChartImages] = useState<{ [key: string]: string }>({});
   const [isPdfPrepared, setIsPdfPrepared] = useState(false);
+  const [isPreparing, setIsPreparing] = useState(false);
   const feedRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsPdfPrepared(false);
+  }, [accountId, dateRange]);
 
   const {
     data: feed,
@@ -64,6 +70,22 @@ export function FeedDisplay({ accountId, dateRange }: FeedDisplayProps) {
     enabled: !!accountId && !!dateRange,
   });
 
+  const prepareChartImages = useCallback(async () => {
+    if (feedRef.current && feed) {
+      setIsPreparing(true);
+      const images: { [key: string]: string } = {};
+      for (const item of feed) {
+        const chartElement = feedRef.current.querySelector(`#chart-${item.id}`);
+        if (chartElement) {
+          images[item.id] = await captureChart(chartElement as HTMLElement);
+        }
+      }
+      setChartImages(images);
+      setIsPdfPrepared(true);
+      setIsPreparing(false);
+    }
+  }, [feed]);
+
   if (!accountId || !dateRange) {
     return (
       <div className="text-center text-gray-500 mt-8 mb-4">
@@ -71,7 +93,13 @@ export function FeedDisplay({ accountId, dateRange }: FeedDisplayProps) {
       </div>
     );
   }
-
+  if (feed?.length === 0) {
+    return (
+      <div className="text-center text-gray-500 mt-8 mb-4">
+        No feeds found for the selected account and date range.
+      </div>
+    );
+  }
   if (isLoading) {
     return <div className="text-center mt-8">Loading feed...</div>;
   }
@@ -84,22 +112,8 @@ export function FeedDisplay({ accountId, dateRange }: FeedDisplayProps) {
     );
   }
 
-  const prepareChartImages = async () => {
-    if (feedRef.current && feed) {
-      const images: { [key: string]: string } = {};
-      for (const item of feed) {
-        const chartElement = feedRef.current.querySelector(`#chart-${item.id}`);
-        if (chartElement) {
-          images[item.id] = await captureChart(chartElement as HTMLElement);
-        }
-      }
-      setChartImages(images);
-      setIsPdfPrepared(true);
-    }
-  };
-
   return (
-    <div className="mt-4 max-w-5xl mx-auto">
+    <div id="feed-display" className="mt-4 max-w-5xl mx-auto">
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-xl font-bold">Feed</h2>
         {feed && feed.length > 0 && (
@@ -107,9 +121,12 @@ export function FeedDisplay({ accountId, dateRange }: FeedDisplayProps) {
             {!isPdfPrepared ? (
               <button
                 onClick={prepareChartImages}
-                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+                disabled={isPreparing}
+                className={`${
+                  isPreparing ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"
+                } text-white font-bold py-2 px-4 rounded inline-flex items-center`}
               >
-                Prepare PDF
+                {isPreparing ? "Preparing PDF..." : "Prepare PDF"}
               </button>
             ) : (
               <PDFDownloadLink
@@ -117,16 +134,12 @@ export function FeedDisplay({ accountId, dateRange }: FeedDisplayProps) {
                 fileName="feed.pdf"
                 className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded inline-flex items-center"
               >
-                {({ loading }) =>
-                  loading ? (
-                    "Loading document..."
-                  ) : (
-                    <>
-                      <Download size={16} className="mr-2" />
-                      Download PDF
-                    </>
-                  )
-                }
+                {({ loading }) => (
+                  <>
+                    <Download size={16} className="mr-2" />
+                    {loading ? "Generating PDF..." : "Download PDF"}
+                  </>
+                )}
               </PDFDownloadLink>
             )}
           </>
@@ -170,12 +183,17 @@ export function FeedDisplay({ accountId, dateRange }: FeedDisplayProps) {
                       {item.reactions.summary.total_count}
                     </span>
                   </div>
-                  <div className="flex items-center">
-                    <MessageCircle size={16} className="text-green-500 mr-1" />
-                    <span className="text-sm text-gray-600">
-                      {item.comments.summary.total_count}
-                    </span>
-                  </div>
+                  <RightDrawer>
+                    <div className="flex items-center">
+                      <MessageCircle
+                        size={16}
+                        className="text-green-500 mr-1"
+                      />
+                      <span className="text-sm text-gray-600">
+                        {item.comments.summary.total_count}
+                      </span>
+                    </div>
+                  </RightDrawer>
                 </div>
               </div>
             </div>

@@ -14,6 +14,14 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FeedDisplay } from "./FeedDisplay";
+import { Users, UserPlus } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 type FormData = {
   option: string;
@@ -51,12 +59,14 @@ export function FilterBar() {
     endDate: string;
   } | null>(null);
 
-  const { control, handleSubmit } = useForm<FormData>({
+  const { control, handleSubmit, watch } = useForm<FormData>({
     defaultValues: {
       option: "",
       dateRange: null,
     },
   });
+
+  const selectedOption = watch("option");
 
   const {
     data: accounts,
@@ -65,6 +75,15 @@ export function FilterBar() {
   } = useQuery({
     queryKey: ["accounts"],
     queryFn: fetchAccounts,
+  });
+
+  const { data: pageInfo, isLoading: pageInfoLoading } = useQuery({
+    queryKey: ["pageInfo", selectedOption],
+    queryFn: () =>
+      axios
+        .get(`https://meta-api-eight.vercel.app/api/v1/page/${selectedOption}`)
+        .then((res) => res.data.data),
+    enabled: !!selectedOption,
   });
 
   const onSubmit = useCallback((data: FormData) => {
@@ -111,7 +130,7 @@ export function FilterBar() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex flex-wrap w-[90%] items-center gap-4 p-4 bg-card rounded-lg shadow-md"
+          className="flex    flex-wrap w-[90%] items-center gap-4 p-4 bg-card rounded-lg shadow-md"
         >
           <div className="w-fuul flex-grow">
             <Controller
@@ -149,9 +168,53 @@ export function FilterBar() {
             <Button className="flex-grow" onClick={handleSubmit(onSubmit)}>
               Generate
             </Button>
-            <Button variant="outline" className="flex-grow">
-              Preview
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="flex-grow"
+                  disabled={!selectedOption}
+                >
+                  Preview
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[700px]">
+                <DialogHeader>
+                  <DialogTitle className="pb-4">Page Preview</DialogTitle>
+                  <div>
+                    {pageInfoLoading ? (
+                      <div>Loading page info...</div>
+                    ) : pageInfo ? (
+                      <div className="space-y-4">
+                        <img
+                          src={pageInfo.cover?.source}
+                          alt="Page Cover"
+                          className="w-full h-64 object-fit rounded-md"
+                        />
+                        <h1 className="text-xl  text-black font-semibold">
+                          {pageInfo.name}
+                        </h1>
+                        <div className="text-base text-gray-600">
+                          {pageInfo.about}
+                        </div>
+                        <div className="flex justify-between text-base">
+                          <div className="flex items-center bg-gray-200 p-2 rounded-md my-2  ">
+                            <Users className="w-5 h-5 mr-2" />
+                            <span>{pageInfo.fan_count} fans</span>
+                          </div>
+                          <div className="flex items-center bg-gray-200 p-2 rounded-md my-2">
+                            <UserPlus className="w-5 h-5 mr-2" />
+                            <span>{pageInfo.followers_count} followers</span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>No page info available</div>
+                    )}
+                  </div>
+                </DialogHeader>
+              </DialogContent>
+            </Dialog>
             <Button variant="destructive" onClick={handleLogout}>
               Logout
             </Button>

@@ -19,10 +19,14 @@ export function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div
+      id="login"
+      className="flex items-center justify-center min-h-screen bg-gray-100"
+    >
       <form onSubmit={handleLogin} className="p-6 bg-white rounded shadow-md">
         <h2 className="text-2xl mb-4">Login</h2>
         <input
+          name="username"
           type="text"
           placeholder="Username"
           value={username}
@@ -30,6 +34,7 @@ export function Login() {
           className="w-full p-2 mb-4 border rounded"
         />
         <input
+          name="password"
           type="password"
           placeholder="Password"
           value={password}
