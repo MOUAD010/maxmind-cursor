@@ -43,10 +43,10 @@ export function Login() {
           onChange={(e) => setPassword(e.target.value)}
           className="w-full p-2 mb-4 border rounded"
         />
-        {/* <Button type="submit" id="submit" className="w-full">
+        <Button type="submit" id="submit" className="w-full">
           Login
-        </Button> */}
-        <input type="submit" value="Login" id="submit" />
+        </Button>
+        {/* <input type="submit" value="Login" id="submit" /> */}
       </form>
     </div>
   );

@@ -1,13 +1,13 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
-import { ThumbsUp, MessageCircle, Download } from "lucide-react";
+import { ThumbsUp, MessageCircle } from "lucide-react";
 import PostAnalytics from "./PostAnalytics";
-import { PDFDownloadLink } from "@react-pdf/renderer";
-import FeedPDF from "./FeedPDF";
-import { captureChart } from "../utils/pdfUtils";
+// import { PDFDownloadLink } from "@react-pdf/renderer";
+// import FeedPDF from "./FeedPDF";
+// import { captureChart } from "../utils/pdfUtils";
 import RightDrawer from "./ui/RightDrawer";
 
 export type FeedItem = {
@@ -53,14 +53,14 @@ const fetchComments = async (postId: string) => {
 };
 
 export function FeedDisplay({ accountId, dateRange }: FeedDisplayProps) {
-  const [chartImages, setChartImages] = useState<{ [key: string]: string }>({});
-  const [isPdfPrepared, setIsPdfPrepared] = useState(false);
-  const [isPreparing, setIsPreparing] = useState(false);
+  // const [chartImages, setChartImages] = useState<{ [key: string]: string }>({});
+  // const [isPdfPrepared, setIsPdfPrepared] = useState(false);
+  // const [isPreparing, setIsPreparing] = useState(false);
   const feedRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    setIsPdfPrepared(false);
-  }, [accountId, dateRange]);
+  // useEffect(() => {
+  //   setIsPdfPrepared(false);
+  // }, [accountId, dateRange]);
 
   const {
     data: feed,
@@ -77,21 +77,21 @@ export function FeedDisplay({ accountId, dateRange }: FeedDisplayProps) {
     enabled: !!accountId && !!dateRange,
   });
 
-  const prepareChartImages = useCallback(async () => {
-    if (feedRef.current && feed) {
-      setIsPreparing(true);
-      const images: { [key: string]: string } = {};
-      for (const item of feed) {
-        const chartElement = feedRef.current.querySelector(`#chart-${item.id}`);
-        if (chartElement) {
-          images[item.id] = await captureChart(chartElement as HTMLElement);
-        }
-      }
-      setChartImages(images);
-      setIsPdfPrepared(true);
-      setIsPreparing(false);
-    }
-  }, [feed]);
+  // const prepareChartImages = useCallback(async () => {
+  //   if (feedRef.current && feed) {
+  //     setIsPreparing(true);
+  //     const images: { [key: string]: string } = {};
+  //     for (const item of feed) {
+  //       const chartElement = feedRef.current.querySelector(`#chart-${item.id}`);
+  //       if (chartElement) {
+  //         images[item.id] = await captureChart(chartElement as HTMLElement);
+  //       }
+  //     }
+  //     setChartImages(images);
+  //     setIsPdfPrepared(true);
+  //     setIsPreparing(false);
+  //   }
+  // }, [feed]);
 
   if (!accountId || !dateRange) {
     return (
