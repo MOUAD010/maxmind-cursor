@@ -27,6 +27,7 @@ export function Login() {
         <h2 className="text-2xl mb-4">Login</h2>
         <input
           name="username"
+          id="username"
           type="text"
           placeholder="Username"
           value={username}
@@ -35,15 +36,17 @@ export function Login() {
         />
         <input
           name="password"
+          id="password"
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full p-2 mb-4 border rounded"
         />
-        <Button type="submit" className="w-full">
+        {/* <Button type="submit" id="submit" className="w-full">
           Login
-        </Button>
+        </Button> */}
+        <input type="submit" value="Login" id="submit" />
       </form>
     </div>
   );

@@ -11,24 +11,47 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { ThumbsUp, Heart, LaughIcon, Frown } from "lucide-react";
+import { TbMoodSuprised } from "react-icons/tb";
 
-const SimpleChart = () => {
+const SimpleChart = ({ states }: { states: any }) => {
+  const reactionStats = states.find(
+    (stat: any) => stat.name === "post_reactions_by_type_total"
+  );
+
+  const reactions = reactionStats?.values[0]?.value || {};
+
   return (
     <Card className="w-full h-full">
       <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-2 [&>div]:flex-1">
-        <div>
-          <CardDescription>Likes Count</CardDescription>
-          <CardTitle className="flex items-baseline gap-1 text-4xl tabular-nums">
-            62
-            <span className="text-sm font-normal tracking-normal text-muted-foreground"></span>
-          </CardTitle>
-        </div>
-        <div>
-          <CardDescription>Likes in the Giving Dates</CardDescription>
-          <CardTitle className="flex items-baseline gap-1 text-4xl tabular-nums">
-            35
-            <span className="text-sm font-normal tracking-normal text-muted-foreground"></span>
-          </CardTitle>
+        <div className="flex justify-between">
+          <div className="font-bold ml-4">
+            <h1>Reactions:</h1>
+          </div>
+          <div className="flex justify-start">
+            <div className="flex justify-be gap-3 ">
+              <div className="flex items-center gap-1 ">
+                <ThumbsUp />
+                {reactions.like || 0}
+              </div>
+              <div className="flex items-center gap-1">
+                <Heart />
+                {reactions.love || 0}
+              </div>
+              <div className="flex items-center gap-1">
+                <LaughIcon />
+                {reactions.haha || 0}
+              </div>
+              <div className="flex items-center gap-1">
+                <Frown />
+                {reactions.sorry || 0}
+              </div>
+              <div className="flex items-center gap-1">
+                <TbMoodSuprised size={25} />
+                {reactions.wow || 0}
+              </div>
+            </div>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="flex items-center">

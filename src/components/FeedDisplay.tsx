@@ -36,13 +36,20 @@ const fetchFeed = async (accountId: string, since: string, until: string) => {
   const response = await axios.post(
     `https://meta-api-eight.vercel.app/api/v1/page/${accountId}/feeds`,
     {
-      limit: "100",
+      limit: "3",
       offset: "0",
       since,
       until,
     }
   );
   return response.data.data.data as FeedItem[];
+};
+
+const fetchComments = async (postId: string) => {
+  const response = await axios.post(
+    `http://localhost:5000/api/v1/post/${postId}/comments`
+  );
+  return response.data.data.data;
 };
 
 export function FeedDisplay({ accountId, dateRange }: FeedDisplayProps) {
@@ -118,7 +125,7 @@ export function FeedDisplay({ accountId, dateRange }: FeedDisplayProps) {
         <h2 className="text-xl font-bold">Feed</h2>
         {feed && feed.length > 0 && (
           <>
-            {!isPdfPrepared ? (
+            {/* {!isPdfPrepared ? (
               <button
                 onClick={prepareChartImages}
                 disabled={isPreparing}
@@ -141,7 +148,7 @@ export function FeedDisplay({ accountId, dateRange }: FeedDisplayProps) {
                   </>
                 )}
               </PDFDownloadLink>
-            )}
+            )} */}
           </>
         )}
       </div>
@@ -170,35 +177,42 @@ export function FeedDisplay({ accountId, dateRange }: FeedDisplayProps) {
                     {item.message}
                   </p>
                 </div>
-                <p className="text-sm text-gray-600 mb-1">
-                  {format(
-                    new Date(item.created_time),
-                    "MMM d, yyyy 'at' HH:mm"
-                  )}
-                </p>
-                <div className="flex items-center space-x-3">
-                  <div className="flex items-center">
-                    <ThumbsUp size={16} className="text-blue-500 mr-1" />
-                    <span className="text-sm text-gray-600">
-                      {item.reactions.summary.total_count}
-                    </span>
-                  </div>
-                  <RightDrawer>
+                <div className="flex justify-between">
+                  <p className="text-sm text-gray-600 mb-1">
+                    {format(
+                      new Date(item.created_time),
+                      "MMM d, yyyy 'at' HH:mm"
+                    )}
+                  </p>
+                  <div className="flex items-center space-x-3">
                     <div className="flex items-center">
-                      <MessageCircle
-                        size={16}
-                        className="text-green-500 mr-1"
-                      />
+                      <ThumbsUp size={16} className="text-blue-500 mr-1" />
                       <span className="text-sm text-gray-600">
-                        {item.comments.summary.total_count}
+                        {item.reactions.summary.total_count}
                       </span>
                     </div>
-                  </RightDrawer>
+                    <RightDrawer
+                      date={item.created_time}
+                      text={item.message}
+                      postId={item.id}
+                      fetchComments={fetchComments}
+                    >
+                      <div className="flex items-center">
+                        <MessageCircle
+                          size={16}
+                          className="text-green-500 mr-1"
+                        />
+                        <span className="text-sm text-gray-600">
+                          {item.comments.summary.total_count}
+                        </span>
+                      </div>
+                    </RightDrawer>
+                  </div>
                 </div>
               </div>
             </div>
             <div id={`chart-${item.id}`}>
-              <PostAnalytics />
+              <PostAnalytics id_post={item.id} />
             </div>
           </motion.div>
         ))}

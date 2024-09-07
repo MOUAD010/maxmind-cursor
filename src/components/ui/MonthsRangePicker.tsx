@@ -68,6 +68,7 @@ export default function MonthPicker({
     <Popover>
       <PopoverTrigger asChild>
         <Button
+          id="date-range-picker"
           variant="outline"
           className={cn(
             "w-[240px] justify-start text-left font-normal",

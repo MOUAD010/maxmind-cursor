@@ -4,6 +4,9 @@
 body {
   background-color: #f0f2f5;
 }
+.feed-display div {
+  break-after: always;
+}
 @layer base {
   :root {
     --background: 0 0% 100%;

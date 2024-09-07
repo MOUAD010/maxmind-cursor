@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import PageInfo from "./PageInfo"; // We'll create this component
 
 type FormData = {
   option: string;
@@ -58,6 +59,7 @@ export function FilterBar() {
     startDate: string;
     endDate: string;
   } | null>(null);
+  const [showResults, setShowResults] = useState(false);
 
   const { control, handleSubmit, watch } = useForm<FormData>({
     defaultValues: {
@@ -90,6 +92,7 @@ export function FilterBar() {
     console.log(data);
     setSelectedAccount(data.option);
     setSelectedDateRange(data.dateRange);
+    setShowResults(true);
   }, []);
 
   React.useEffect(() => {
@@ -125,7 +128,7 @@ export function FilterBar() {
 
   return (
     <>
-      <div className="flex justify-center">
+      <div className="flex justify-center" id="filter-bar">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -137,7 +140,11 @@ export function FilterBar() {
               name="option"
               control={control}
               render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select
+                  name="option-select"
+                  onValueChange={field.onChange}
+                  value={field.value}
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select an account" />
                   </SelectTrigger>
@@ -165,7 +172,11 @@ export function FilterBar() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Button className="flex-grow" onClick={handleSubmit(onSubmit)}>
+            <Button
+              className="flex-grow"
+              id="submit"
+              onClick={handleSubmit(onSubmit)}
+            >
               Generate
             </Button>
             <Dialog>
@@ -222,7 +233,17 @@ export function FilterBar() {
         </motion.div>
       </div>
 
-      <FeedDisplay accountId={selectedAccount} dateRange={selectedDateRange} />
+      {showResults && (
+        <div className="mt-8 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <PageInfo pageId={selectedAccount} dateRange={selectedDateRange} />
+          <div className="mt-8">
+            <FeedDisplay
+              accountId={selectedAccount}
+              dateRange={selectedDateRange}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 }
