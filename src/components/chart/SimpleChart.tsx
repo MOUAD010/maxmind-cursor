@@ -20,7 +20,7 @@ const SimpleChart = ({ states }: { states: any }) => {
   );
 
   const reactions = reactionStats?.values[0]?.value || {};
-
+  console.log(reactions);
   return (
     <Card className="w-full h-full">
       <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-2 [&>div]:flex-1">

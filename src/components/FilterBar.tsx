@@ -14,14 +14,15 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FeedDisplay } from "./FeedDisplay";
-import { Users, UserPlus } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Facebook, Instagram } from "lucide-react";
+// import { Users, UserPlus } from "lucide-react";
+// import {
+//   Dialog,
+//   DialogContent,
+//   DialogHeader,
+//   DialogTitle,
+//   DialogTrigger,
+// } from "@/components/ui/dialog";
 import PageInfo from "./PageInfo"; // We'll create this component
 
 type FormData = {
@@ -44,7 +45,7 @@ const fetchAccounts = async (): Promise<Account[]> => {
   const response = await axios.post<ApiResponse>(
     "https://meta-api-eight.vercel.app/api/v1/accounts",
     {
-      limit: "10",
+      limit: "11",
       after: "",
       before: "",
     }
@@ -60,15 +61,18 @@ export function FilterBar() {
     endDate: string;
   } | null>(null);
   const [showResults, setShowResults] = useState(false);
+  const [platform, setPlatform] = useState<"facebook" | "instagram" | null>(
+    null
+  );
 
-  const { control, handleSubmit, watch } = useForm<FormData>({
+  const { control, handleSubmit } = useForm<FormData>({
     defaultValues: {
       option: "",
       dateRange: null,
     },
   });
 
-  const selectedOption = watch("option");
+  // const selectedOption = watch("option");
 
   const {
     data: accounts,
@@ -79,21 +83,25 @@ export function FilterBar() {
     queryFn: fetchAccounts,
   });
 
-  const { data: pageInfo, isLoading: pageInfoLoading } = useQuery({
-    queryKey: ["pageInfo", selectedOption],
-    queryFn: () =>
-      axios
-        .get(`https://meta-api-eight.vercel.app/api/v1/page/${selectedOption}`)
-        .then((res) => res.data.data),
-    enabled: !!selectedOption,
-  });
+  // const { data: pageInfo, isLoading: pageInfoLoading } = useQuery({
+  //   queryKey: ["pageInfo", selectedOption],
+  //   queryFn: () =>
+  //     axios
+  //       .get(`https://meta-api-eight.vercel.app/api/v1/page/${selectedOption}`)
+  //       .then((res) => res.data.data),
+  //   enabled: !!selectedOption,
+  // });
 
-  const onSubmit = useCallback((data: FormData) => {
-    console.log(data);
-    setSelectedAccount(data.option);
-    setSelectedDateRange(data.dateRange);
-    setShowResults(true);
-  }, []);
+  const onSubmit = useCallback(
+    (data: FormData, platform: "facebook" | "instagram") => {
+      console.log(data);
+      setSelectedAccount(data.option);
+      setSelectedDateRange(data.dateRange);
+      setShowResults(true);
+      setPlatform(platform);
+    },
+    []
+  );
 
   React.useEffect(() => {
     if (error) {
@@ -173,59 +181,24 @@ export function FilterBar() {
             whileTap={{ scale: 0.95 }}
           >
             <Button
-              className="flex-grow"
-              id="submit"
-              onClick={handleSubmit(onSubmit)}
+              className="flex-grow bg-blue-600 hover:bg-blue-700"
+              id="submit-facebook"
+              onClick={() =>
+                handleSubmit((data) => onSubmit(data, "facebook"))()
+              }
             >
-              Generate
+              <Facebook size={16} className="mr-1" />
+              Generate Facebook
             </Button>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="flex-grow"
-                  disabled={!selectedOption}
-                >
-                  Preview
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[700px]">
-                <DialogHeader>
-                  <DialogTitle className="pb-4">Page Preview</DialogTitle>
-                  <div>
-                    {pageInfoLoading ? (
-                      <div>Loading page info...</div>
-                    ) : pageInfo ? (
-                      <div className="space-y-4">
-                        <img
-                          src={pageInfo.cover?.source}
-                          alt="Page Cover"
-                          className="w-full h-64 object-fit rounded-md"
-                        />
-                        <h1 className="text-xl  text-black font-semibold">
-                          {pageInfo.name}
-                        </h1>
-                        <div className="text-base text-gray-600">
-                          {pageInfo.about}
-                        </div>
-                        <div className="flex justify-between text-base">
-                          <div className="flex items-center bg-gray-200 p-2 rounded-md my-2  ">
-                            <Users className="w-5 h-5 mr-2" />
-                            <span>{pageInfo.fan_count} fans</span>
-                          </div>
-                          <div className="flex items-center bg-gray-200 p-2 rounded-md my-2">
-                            <UserPlus className="w-5 h-5 mr-2" />
-                            <span>{pageInfo.followers_count} followers</span>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div>No page info available</div>
-                    )}
-                  </div>
-                </DialogHeader>
-              </DialogContent>
-            </Dialog>
+            <Button
+              className="flex-grow bg-gradient-to-r from-[#f9ce34] to-[#ee2a7b] hover:from-[#f9ce34] hover:to-[#ee2a7b]"
+              id="submit-instagram"
+              onClick={() =>
+                handleSubmit((data) => onSubmit(data, "instagram"))()
+              }
+            >
+              <Instagram className="mr-1" size={16} /> Generate Instagram
+            </Button>
             <Button variant="destructive" onClick={handleLogout}>
               Logout
             </Button>
@@ -233,13 +206,18 @@ export function FilterBar() {
         </motion.div>
       </div>
 
-      {showResults && (
+      {showResults && platform && (
         <div className="mt-8 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <PageInfo pageId={selectedAccount} dateRange={selectedDateRange} />
+          <PageInfo
+            pageId={selectedAccount}
+            dateRange={selectedDateRange}
+            platform={platform}
+          />
           <div className="mt-8">
             <FeedDisplay
               accountId={selectedAccount}
               dateRange={selectedDateRange}
+              platform={platform}
             />
           </div>
         </div>
