@@ -126,12 +126,14 @@ const FeedPDF: React.FC<FeedPDFProps> = ({ feed, chartImages }) => (
               <View style={styles.stats}>
                 <View style={styles.statItem}>
                   <Text>
-                    Number of reactions: {item.reactions.summary.total_count}
+                    Number of reactions:
+                    {item.reactions?.summary?.total_count || 0}
                   </Text>
                 </View>
                 <View style={styles.statItem}>
                   <Text>
-                    Number of Comments: {item.comments.summary.total_count}
+                    Number of Comments:
+                    {item.comments?.summary?.total_count || 0}
                   </Text>
                 </View>
               </View>
