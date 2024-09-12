@@ -177,7 +177,7 @@ export function FeedDisplay({
   }
 
   return (
-    <div id="feed-display" className="mt-4 max-w-5xl mx-auto">
+    <div id="feed-display" className="mt-4 max-w-5xl mx-auto ">
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-xl font-bold">Feed</h2>
         {feed && feed.length > 0 && (
@@ -359,11 +359,13 @@ export function FeedDisplay({
                 </div>
               </div>
             </div>
-            {platform === "facebook" && (
-              <div id={`chart-${item.id}`}>
-                <PostAnalytics plateform="facebook" id_post={item.id} />
-              </div>
-            )}
+            <div id={`chart-${item.id}`}>
+              <PostAnalytics
+                platform={platform}
+                id_post={item.id}
+                pageID={accountId}
+              />
+            </div>
           </motion.div>
         ))}
       </div>

@@ -213,7 +213,7 @@ export function FilterBar() {
             dateRange={selectedDateRange}
             platform={platform}
           />
-          <div className="mt-8">
+          <div className="mt-8 mb-8">
             <FeedDisplay
               accountId={selectedAccount}
               dateRange={selectedDateRange}

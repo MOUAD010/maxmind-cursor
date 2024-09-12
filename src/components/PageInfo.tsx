@@ -228,8 +228,8 @@ const PageInfo: React.FC<PageInfoProps> = ({ pageId, dateRange, platform }) => {
             </span>
           </h2>
         </center>
-        <div className="flex flex-col md:flex-row justify-center">
-          <div className="w-full md:w-1/2 p-2">
+        <div className="flex flex-col md:flex-row justify-center px-6">
+          <div className="w-full md:w-1/2 p-2 ">
             <h3 className="text-center font-semibold">Page Impressions</h3>
             <ResponsiveContainer height={300} width="100%">
               <LineChart data={chartData}>
