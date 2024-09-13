@@ -8,12 +8,12 @@ import {
   Frown,
   Angry,
   Smile,
-  Share2,
-  MessageCircle,
-  Bookmark,
-  Eye,
-  UserPlus,
-  Activity,
+  // Share2,
+  // MessageCircle,
+  // Bookmark,
+  // Eye,
+  // UserPlus,
+  // Activity,
 } from "lucide-react";
 
 interface InsightValue {
@@ -94,28 +94,28 @@ const PostAnalytics = ({
   if (!data && !data2) return <div>No data available</div>;
   // console.log(data2?.data);
 
-  const getIcon = (name: string) => {
-    switch (name) {
-      case "likes":
-        return <ThumbsUp size={20} />;
-      case "comments":
-        return <MessageCircle size={20} />;
-      case "shares":
-        return <Share2 size={20} />;
-      case "impressions":
-        return <Eye size={20} />;
-      case "saved":
-        return <Bookmark size={20} />;
-      case "total_interactions":
-        return <Activity size={20} />;
-      case "follows":
-        return <UserPlus size={20} />;
-      case "reach":
-        return <Eye size={20} />;
-      default:
-        return null;
-    }
-  };
+  // const getIcon = (name: string) => {
+  //   switch (name) {
+  //     case "likes":
+  //       return <ThumbsUp size={20} />;
+  //     case "comments":
+  //       return <MessageCircle size={20} />;
+  //     case "shares":
+  //       return <Share2 size={20} />;
+  //     case "impressions":
+  //       return <Eye size={20} />;
+  //     case "saved":
+  //       return <Bookmark size={20} />;
+  //     case "total_interactions":
+  //       return <Activity size={20} />;
+  //     case "follows":
+  //       return <UserPlus size={20} />;
+  //     case "reach":
+  //       return <Eye size={20} />;
+  //     default:
+  //       return null;
+  //   }
+  // };
   // console.log(data);
   const isVideoPost = post_type?.toLowerCase().includes("video");
 
