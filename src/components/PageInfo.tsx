@@ -119,7 +119,7 @@ const PageInfo: React.FC<PageInfoProps> = ({ pageId, dateRange, platform }) => {
           <div className="text-base text-gray-600 mt-2">
             {pageInfo.biography}
           </div>
-          <div className="flex justify-between text-base mt-4">
+          <div className="flex justify-start gap-4 text-base mt-4">
             <div className="flex items-center bg-gray-200 p-2 rounded-md">
               <Users className="w-5 h-5 mr-2" />
               <span>{pageInfo.followers_count} followers</span>
@@ -197,7 +197,7 @@ const PageInfo: React.FC<PageInfoProps> = ({ pageId, dateRange, platform }) => {
         <div className="px-4 py-5 sm:px-6">
           <h1 className="text-xl text-black font-semibold">{pageInfo.name}</h1>
           <div className="text-base text-gray-600 mt-2">{pageInfo.about}</div>
-          <div className="flex justify-between text-base mt-4">
+          <div className="flex justify-start gap-4 text-base mt-4">
             <div className="flex items-center bg-gray-200 p-2 rounded-md">
               <Users className="w-5 h-5 mr-2" />
               <span>{pageInfo.fan_count} fans</span>

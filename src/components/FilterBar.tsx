@@ -56,6 +56,7 @@ const fetchAccounts = async (): Promise<Account[]> => {
 export function FilterBar() {
   const navigate = useNavigate();
   const [selectedAccount, setSelectedAccount] = useState("");
+  const [showButton, setShowButton] = useState(false);
   const [selectedDateRange, setSelectedDateRange] = useState<{
     startDate: string;
     endDate: string;
@@ -180,6 +181,16 @@ export function FilterBar() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
+            <Button onClick={() => setShowButton(true)}>Generate</Button>
+            <Button variant="destructive" onClick={handleLogout}>
+              Logout
+            </Button>
+          </motion.div>
+        </motion.div>
+      </div>
+      {showButton && (
+        <div>
+          <div className="flex ml-20 justify-start w-36 gap-4 mt-4">
             <Button
               className="flex-grow bg-blue-600 hover:bg-blue-700"
               id="submit-facebook"
@@ -199,13 +210,9 @@ export function FilterBar() {
             >
               <Instagram className="mr-1" size={16} /> Generate Instagram
             </Button>
-            <Button variant="destructive" onClick={handleLogout}>
-              Logout
-            </Button>
-          </motion.div>
-        </motion.div>
-      </div>
-
+          </div>
+        </div>
+      )}
       {showResults && platform && (
         <div className="mt-8 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <PageInfo

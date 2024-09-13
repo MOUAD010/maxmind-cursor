@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
-import { ThumbsUp, MessageCircle, Forward, Loader } from "lucide-react";
+import { ThumbsUp, MessageCircle, Forward, Loader, Play } from "lucide-react";
 import PostAnalytics from "./PostAnalytics";
 // import { PDFDownloadLink } from "@react-pdf/renderer";
 // import FeedPDF from "./FeedPDF";
@@ -42,6 +42,12 @@ export type FeedItem = {
   // Add these fields for Instagram
   like_count?: number;
   comments_count?: number;
+  attachments?: {
+    data: Array<{
+      type: string;
+      // other properties of attachment data
+    }>;
+  };
 };
 
 type FeedDisplayProps = {
@@ -58,9 +64,9 @@ const fetchFeed = async (
 ) => {
   if (platform === "facebook") {
     const response = await axios.post(
-      `https://meta-api-eight.vercel.app/api/v1/page/${accountId}/feeds`,
+      `http://localhost:5000/api/v1/page/${accountId}/feeds`,
       {
-        limit: "100",
+        limit: "5",
         offset: "0",
         since,
         until,
@@ -220,7 +226,7 @@ export function FeedDisplay({
           >
             <div className="flex flex-col sm:flex-row">
               {(item.full_picture || item.media_url) && (
-                <div className="flex-shrink-0 mb-3 sm:mb-0 sm:mr-4">
+                <div className="flex-shrink-0 mb-3 sm:mb-0 sm:mr-4 relative">
                   <img
                     src={
                       item.thumbnail_url
@@ -228,14 +234,25 @@ export function FeedDisplay({
                         : item.media_url || item.full_picture || noImage
                     }
                     alt=""
-                    className="w-80 h-96 as object-fill rounded"
+                    className="w-80 h-96 object-fill rounded"
                   />
+                  {item.attachments?.data[0].type
+                    ?.toLowerCase()
+                    .includes("video") && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Play
+                        size={48}
+                        color="black"
+                        className="text-white opacity-7 bg-white/100 rounded-full p-2"
+                      />
+                    </div>
+                  )}
                 </div>
               )}
               <div className="flex-grow">
-                <div className="text-wrap break-words ">
+                <div className="text-wrap break-words h-[360px] ">
                   <p className="text-gray-800 text-wrap mb-2 break-all">
-                    {item.message || item.caption}
+                    {item.message || item.caption || "No caption available"}
                   </p>
                 </div>
                 <div className="flex justify-between">
@@ -256,6 +273,7 @@ export function FeedDisplay({
                     item.reactions &&
                     item.comments && (
                       <div className="flex items-center space-x-3">
+                        {/* {item.id} */}
                         <div className="flex items-center">
                           <ThumbsUp size={16} className="text-blue-500 mr-1" />
                           <span className="text-sm text-gray-600">
@@ -344,16 +362,6 @@ export function FeedDisplay({
                           </div>
                         )}
                       </div>
-                      {item.permalink && (
-                        <a
-                          href={item.permalink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-500 hover:underline"
-                        >
-                          View on Instagram
-                        </a>
-                      )}
                     </div>
                   )}
                 </div>
@@ -364,6 +372,7 @@ export function FeedDisplay({
                 platform={platform}
                 id_post={item.id}
                 pageID={accountId}
+                post_type={item.attachments?.data[0].type}
               />
             </div>
           </motion.div>
