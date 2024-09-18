@@ -234,7 +234,7 @@ const InstagramPageInfo: React.FC<InstagramPageInfoProps> = ({
                   fill="#8884d8"
                   label
                 >
-                  {ageData.map((entry: any, index: number) => (
+                  {ageData.map((_: any, index: number) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={COLORS[index % COLORS.length]}
@@ -267,7 +267,7 @@ const InstagramPageInfo: React.FC<InstagramPageInfoProps> = ({
                   fill="#8884d8"
                   label
                 >
-                  {genderData.map((entry: any, index: number) => (
+                  {genderData.map((_: any, index: number) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={COLORS[index % COLORS.length]}
