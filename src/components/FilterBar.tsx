@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo } from "react";
 import {
   Select,
   SelectContent,
@@ -15,16 +15,9 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FeedDisplay } from "./FeedDisplay";
 import { Facebook, Instagram } from "lucide-react";
-// import { Users, UserPlus } from "lucide-react";
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogHeader,
-//   DialogTitle,
-//   DialogTrigger,
-// } from "@/components/ui/dialog";
-import PageInfo from "./PageInfo"; // We'll create this component
+import PageInfo from "./PageInfo";
 
+// Define types for form data and API responses
 type FormData = {
   option: string;
   dateRange: { startDate: string; endDate: string } | null;
@@ -41,39 +34,36 @@ type ApiResponse = {
   };
 };
 
+// Function to fetch accounts from the API
 const fetchAccounts = async (): Promise<Account[]> => {
   const response = await axios.post<ApiResponse>(
     "https://meta-api-eight.vercel.app/api/v1/accounts",
-    {
-      limit: "11",
-      after: "",
-      before: "",
-    }
+    { limit: "11", after: "", before: "" }
   );
   return response.data.data.data;
 };
 
 export function FilterBar() {
   const navigate = useNavigate();
-  const [selectedAccount, setSelectedAccount] = useState("");
-  const [showButton, setShowButton] = useState(false);
-  const [selectedDateRange, setSelectedDateRange] = useState<{
-    startDate: string;
-    endDate: string;
-  } | null>(null);
-  const [showResults, setShowResults] = useState(false);
-  const [platform, setPlatform] = useState<"facebook" | "instagram" | null>(
+  const [showResults, setShowResults] = React.useState(false);
+  const [platform, setPlatform] = React.useState<
+    "facebook" | "instagram" | null
+  >(null);
+  const [submittedData, setSubmittedData] = React.useState<FormData | null>(
     null
   );
 
-  const { control, handleSubmit } = useForm<FormData>({
+  const { control, handleSubmit, watch } = useForm<FormData>({
     defaultValues: {
       option: "",
       dateRange: null,
     },
   });
 
-  // const selectedOption = watch("option");
+  const selectedOption = watch("option");
+  const selectedDateRange = watch("dateRange");
+
+  const isSubmitDisabled = !selectedOption || !selectedDateRange;
 
   const {
     data: accounts,
@@ -84,30 +74,38 @@ export function FilterBar() {
     queryFn: fetchAccounts,
   });
 
-  // const { data: pageInfo, isLoading: pageInfoLoading } = useQuery({
-  //   queryKey: ["pageInfo", selectedOption],
-  //   queryFn: () =>
-  //     axios
-  //       .get(`https://meta-api-eight.vercel.app/api/v1/page/${selectedOption}`)
-  //       .then((res) => res.data.data),
-  //   enabled: !!selectedOption,
-  // });
-
   const onSubmit = useCallback(
-    (data: FormData, platform: "facebook" | "instagram") => {
+    (data: FormData, selectedPlatform: "facebook" | "instagram") => {
       console.log(data);
-      setSelectedAccount(data.option);
-      setSelectedDateRange(data.dateRange);
-      setShowResults(true);
-      setPlatform(platform);
+      const today = new Date();
+      // Check if the endDate month is the current month and endDate is defined
+      if (
+        data.dateRange?.endDate &&
+        new Date(data.dateRange.endDate).getMonth() === today.getMonth()
+      ) {
+        // Adjust the endDate to today's date
+        data.dateRange.endDate = `${today.getFullYear()}-${(
+          today.getMonth() + 1
+        )
+          .toString()
+          .padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
+        setShowResults(true);
+        setPlatform(selectedPlatform);
+        setSubmittedData(data);
+        // console.log("Updated endDate:", data.dateRange?.endDate);
+      } else {
+        setShowResults(true);
+        setPlatform(selectedPlatform);
+        setSubmittedData(data);
+      }
+
+      // Process form data, e.g., submit it or set states
     },
     []
   );
 
   React.useEffect(() => {
-    if (error) {
-      console.error("Query error:", error);
-    }
+    if (error) console.error("Query error:", error);
   }, [error]);
 
   const selectOptions = useMemo(() => {
@@ -142,9 +140,9 @@ export function FilterBar() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex    flex-wrap w-[90%] items-center gap-4 p-4 bg-card rounded-lg shadow-md"
+          className="flex  w-[90%] items-center gap-4 p-4 bg-card rounded-lg shadow-md"
         >
-          <div className="w-fuul flex-grow">
+          <div className="w-full flex-grow">
             <Controller
               name="option"
               control={control}
@@ -181,49 +179,44 @@ export function FilterBar() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Button onClick={() => setShowButton(true)}>Generate</Button>
             <Button variant="destructive" onClick={handleLogout}>
               Logout
             </Button>
           </motion.div>
         </motion.div>
       </div>
-      {showButton && (
-        <div>
-          <div className="flex ml-20 justify-start w-36 gap-4 mt-4">
-            <Button
-              className="flex-grow bg-blue-600 hover:bg-blue-700"
-              id="submit-facebook"
-              onClick={() =>
-                handleSubmit((data) => onSubmit(data, "facebook"))()
-              }
-            >
-              <Facebook size={16} className="mr-1" />
-              Generate Facebook
-            </Button>
-            <Button
-              className="flex-grow bg-gradient-to-r from-[#f9ce34] to-[#ee2a7b] hover:from-[#f9ce34] hover:to-[#ee2a7b]"
-              id="submit-instagram"
-              onClick={() =>
-                handleSubmit((data) => onSubmit(data, "instagram"))()
-              }
-            >
-              <Instagram className="mr-1" size={16} /> Generate Instagram
-            </Button>
-          </div>
-        </div>
-      )}
-      {showResults && platform && (
+
+      <div className="flex ml-20 justify-start w-36 gap-4 mt-4">
+        <Button
+          className="flex-grow bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          id="submit-facebook"
+          onClick={() => handleSubmit((data) => onSubmit(data, "facebook"))()}
+          disabled={isSubmitDisabled}
+        >
+          <Facebook size={16} className="mr-1" />
+          Generate Facebook
+        </Button>
+        <Button
+          className="flex-grow bg-gradient-to-r from-[#f9ce34] to-[#ee2a7b] hover:from-[#f9ce34] hover:to-[#ee2a7b] disabled:opacity-50 disabled:cursor-not-allowed"
+          id="submit-instagram"
+          onClick={() => handleSubmit((data) => onSubmit(data, "instagram"))()}
+          disabled={isSubmitDisabled}
+        >
+          <Instagram className="mr-1" size={16} /> Generate Instagram
+        </Button>
+      </div>
+
+      {showResults && platform && submittedData && (
         <div className="mt-8 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <PageInfo
-            pageId={selectedAccount}
-            dateRange={selectedDateRange}
+            pageId={submittedData.option}
+            dateRange={submittedData.dateRange}
             platform={platform}
           />
           <div className="mt-8 mb-8">
             <FeedDisplay
-              accountId={selectedAccount}
-              dateRange={selectedDateRange}
+              accountId={submittedData.option}
+              dateRange={submittedData.dateRange}
               platform={platform}
             />
           </div>

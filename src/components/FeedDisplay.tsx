@@ -3,14 +3,25 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
-import { ThumbsUp, MessageCircle, Forward, Loader, Play } from "lucide-react";
+import {
+  ThumbsUp,
+  MessageCircle,
+  Forward,
+  Loader,
+  Play,
+  Heart,
+  Laugh,
+  Smile,
+  Frown,
+  Angry,
+  Pocket,
+} from "lucide-react";
 import PostAnalytics from "./PostAnalytics";
-// import { PDFDownloadLink } from "@react-pdf/renderer";
-// import FeedPDF from "./FeedPDF";
-// import { captureChart } from "../utils/pdfUtils";
 import RightDrawer from "./ui/RightDrawer";
 import noImage from "../assets/noimage.jpg";
 import InstagramRightDrawer from "./ui/InstagramRightDrawer";
+import { getPostInsights } from "@/utils/api";
+
 export type FeedItem = {
   id: string;
   message?: string;
@@ -21,6 +32,8 @@ export type FeedItem = {
   permalink?: string;
   timestamp?: string;
   thumbnail_url?: string;
+  media_type?: string;
+  insights?: any;
   shares?: {
     count: number;
   };
@@ -98,19 +111,58 @@ const fetchComments = async (postId: string) => {
   return response.data.data.data;
 };
 
+const ReactionDisplay = ({ postId }: { postId: string }) => {
+  const {
+    data: insightsData,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["postInsights", postId],
+    queryFn: () => getPostInsights(postId),
+  });
+
+  if (isLoading) return <Loader size={16} className="animate-spin" />;
+
+  if (isError || !insightsData || !insightsData.data) {
+    return <div className="text-red-500">Error loading insights</div>;
+  }
+
+  const reactionData = insightsData.data.find(
+    (item: any) => item.name === "post_reactions_by_type_total"
+  );
+  const reactions =
+    (reactionData?.values[0]?.value as { [key: string]: number }) || {};
+
+  const emoteIcons: { [key: string]: React.ReactNode } = {
+    like: <ThumbsUp size={16} className="text-blue-500" />,
+    love: <Heart size={16} className="text-red-500" />,
+    haha: <Laugh size={16} className="text-yellow-500" />,
+    wow: <Smile size={16} className="text-green-500" />,
+    sorry: <Frown size={16} className="text-purple-500" />,
+    angry: <Angry size={16} className="text-orange-500" />,
+    care: <Smile size={16} className="text-pink-500" />,
+  };
+
+  const allReactionTypes = Object.keys(emoteIcons);
+
+  return (
+    <div className="flex items-center space-x-2">
+      {allReactionTypes.map((type) => (
+        <div key={type} className="flex items-center">
+          <span className="mr-1">{emoteIcons[type]}</span>
+          <span className="text-sm text-gray-600">{reactions[type] || 0}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export function FeedDisplay({
   accountId,
   dateRange,
   platform,
 }: FeedDisplayProps) {
-  // const [chartImages, setChartImages] = useState<{ [key: string]: string }>({});
-  // const [isPdfPrepared, setIsPdfPrepared] = useState(false);
-  // const [isPreparing, setIsPreparing] = useState(false);
   const feedRef = useRef<HTMLDivElement>(null);
-
-  // useEffect(() => {
-  //   setIsPdfPrepared(false);
-  // }, [accountId, dateRange]);
 
   const {
     data: feed,
@@ -127,22 +179,6 @@ export function FeedDisplay({
       ),
     enabled: !!accountId && !!dateRange,
   });
-
-  // const prepareChartImages = useCallback(async () => {
-  //   if (feedRef.current && feed) {
-  //     setIsPreparing(true);
-  //     const images: { [key: string]: string } = {};
-  //     for (const item of feed) {
-  //       const chartElement = feedRef.current.querySelector(`#chart-${item.id}`);
-  //       if (chartElement) {
-  //         images[item.id] = await captureChart(chartElement as HTMLElement);
-  //       }
-  //     }
-  //     setChartImages(images);
-  //     setIsPdfPrepared(true);
-  //     setIsPreparing(false);
-  //   }
-  // }, [feed]);
 
   if (!accountId || !dateRange) {
     return (
@@ -186,37 +222,9 @@ export function FeedDisplay({
     <div id="feed-display" className="mt-4 max-w-5xl mx-auto ">
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-xl font-bold">Feed</h2>
-        {feed && feed.length > 0 && (
-          <>
-            {/* {!isPdfPrepared ? (
-              <button
-                onClick={prepareChartImages}
-                disabled={isPreparing}
-                className={`${
-                  isPreparing ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"
-                } text-white font-bold py-2 px-4 rounded inline-flex items-center`}
-              >
-                {isPreparing ? "Preparing PDF..." : "Prepare PDF"}
-              </button>
-            ) : (
-              <PDFDownloadLink
-                document={<FeedPDF feed={feed} chartImages={chartImages} />}
-                fileName="feed.pdf"
-                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded inline-flex items-center"
-              >
-                {({ loading }) => (
-                  <>
-                    <Download size={16} className="mr-2" />
-                    {loading ? "Generating PDF..." : "Download PDF"}
-                  </>
-                )}
-              </PDFDownloadLink>
-            )} */}
-          </>
-        )}
       </div>
       <div className="space-y-4" ref={feedRef}>
-        {feed?.map((item, index) => (
+        {feed?.map((item: FeedItem, index: number) => (
           <motion.div
             key={item.id}
             className="bg-white rounded-md shadow-sm overflow-hidden border-2 border-gray-300 p-4"
@@ -225,7 +233,7 @@ export function FeedDisplay({
             transition={{ duration: 0.2, delay: index * 0.05 }}
           >
             <div className="flex flex-col sm:flex-row">
-              {(item.full_picture || item.media_url) && (
+              {(item.full_picture || item.media_url || item.thumbnail_url) && (
                 <div className="flex-shrink-0 mb-3 sm:mb-0 sm:mr-4 relative">
                   <img
                     src={
@@ -236,25 +244,48 @@ export function FeedDisplay({
                     alt=""
                     className="w-80 h-96 object-fill rounded"
                   />
-                  {item.attachments?.data[0].type
+                  {(item.attachments?.data[0].type
                     ?.toLowerCase()
-                    .includes("video") && (
+                    .includes("video") ||
+                    item.media_type === "VIDEO") && (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <Play
                         size={48}
-                        color="black"
-                        className="text-white opacity-7 bg-white/100 rounded-full p-2"
+                        className="text-black bg-white/50 rounded-full p-2"
                       />
                     </div>
                   )}
                 </div>
               )}
+
               <div className="flex-grow">
-                <div className="text-wrap break-words h-[360px] ">
+                <div className="text-wrap break-words h-[350px] ">
                   <p className="text-gray-800 text-wrap mb-2 break-all">
-                    {item.message || item.caption || "No caption available"}
+                    {(item.message || item.caption || "No caption available")
+                      .split("#")
+                      .map((part, index) =>
+                        index === 0 ? (
+                          <>
+                            {part}
+                            {index <
+                              (
+                                item.message ||
+                                item.caption ||
+                                "No caption available"
+                              ).split("#").length -
+                                1 && (
+                              <>
+                                <br />
+                              </>
+                            )}
+                          </>
+                        ) : (
+                          <>#{part}</>
+                        )
+                      )}
                   </p>
                 </div>
+                <div></div>
                 <div className="flex justify-between">
                   {platform === "facebook" ? (
                     <p className="text-sm text-gray-600 mb-1">
@@ -265,21 +296,17 @@ export function FeedDisplay({
                     </p>
                   ) : (
                     <p className="text-sm text-gray-600 mb-1">
-                      {item?.timestamp?.substring(0, 10) ||
-                        "No timestamp available"}
+                      {format(
+                        new Date(item?.timestamp?.substring(0, 10) || ""),
+                        "MMM d, yyyy"
+                      )}
                     </p>
                   )}
                   {platform === "facebook" &&
                     item.reactions &&
                     item.comments && (
                       <div className="flex items-center space-x-3">
-                        {/* {item.id} */}
-                        <div className="flex items-center">
-                          <ThumbsUp size={16} className="text-blue-500 mr-1" />
-                          <span className="text-sm text-gray-600">
-                            {item.reactions.summary.total_count}
-                          </span>
-                        </div>
+                        <ReactionDisplay postId={item.id} />
                         <div className="flex items-center">
                           <Forward size={16} className="text-yellow-500 mr-1" />
                           <span className="text-sm text-gray-600">
@@ -321,12 +348,25 @@ export function FeedDisplay({
                         )}
                       </div>
                     )}
+
                   {platform === "instagram" && (
                     <div className="flex items-center space-x-3">
                       <div className="flex items-center">
                         <ThumbsUp size={16} className="text-blue-500 mr-1" />
                         <span className="text-sm text-gray-600">
                           {item.like_count || 0}
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        <Forward size={16} className="text-yellow-500 mr-1" />
+                        <span className="text-sm text-gray-600">
+                          {item.insights.data[0].values[0].value || 0}
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        <Pocket size={16} className="text-red-500 mr-1" />
+                        <span className="text-sm text-gray-600">
+                          {item.insights.data[1].values[0].value || 0}
                         </span>
                       </div>
                       <div className="flex items-center">
@@ -367,12 +407,17 @@ export function FeedDisplay({
                 </div>
               </div>
             </div>
+
             <div id={`chart-${item.id}`}>
               <PostAnalytics
                 platform={platform}
                 id_post={item.id}
                 pageID={accountId}
+                dateRange={dateRange}
                 post_type={item.attachments?.data[0].type}
+                media_type={
+                  platform === "instagram" ? item.media_type : undefined
+                }
               />
             </div>
           </motion.div>
